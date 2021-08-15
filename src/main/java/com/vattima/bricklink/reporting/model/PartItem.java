@@ -1,8 +1,12 @@
 package com.vattima.bricklink.reporting.model;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Data
+@EqualsAndHashCode
+@ToString
 public class PartItem implements Item {
     private String itemId;
 

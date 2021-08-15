@@ -1,0 +1,8 @@
+com\vattima\bricklink\reporting\model\Condition.class
+com\vattima\bricklink\reporting\model\PartItem.class
+com\vattima\bricklink\reporting\wantedlist\model\WantedItemList.class
+com\vattima\bricklink\reporting\model\Item.class
+com\vattima\bricklink\reporting\model\Color.class
+com\vattima\bricklink\reporting\wantedlist\model\WantedItem.class
+com\vattima\bricklink\reporting\wantedlist\model\WantedItem$Builder.class
+com\vattima\bricklink\reporting\model\ItemType.class
