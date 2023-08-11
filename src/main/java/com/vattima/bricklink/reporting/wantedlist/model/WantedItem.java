@@ -9,8 +9,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-import java.util.function.Predicate;
-
 @Data
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString
@@ -41,7 +39,15 @@ public class WantedItem implements Item {
     }
 
     public boolean matches(String itemid, int colorId, String conditionCode) {
-        return this.equals(WantedItem.builder().id(itemid).color(colorId).condition(conditionCode).build()) || this.equals(WantedItem.builder().id(itemid).color(colorId).condition(Condition.UNSPECIFIED.getConditionCode()).build());
+        return this.equals(WantedItem.builder()
+                                     .id(itemid)
+                                     .color(colorId)
+                                     .condition(conditionCode)
+                                     .build()) || this.equals(WantedItem.builder()
+                                                                        .id(itemid)
+                                                                        .color(colorId)
+                                                                        .condition(Condition.UNSPECIFIED.getConditionCode())
+                                                                        .build());
     }
 
     public static Builder builder() {
@@ -67,7 +73,12 @@ public class WantedItem implements Item {
     }
 
     public static WantedItem of(String itemId, int colorId, String conditionCode, int quantity) {
-        return WantedItem.builder().id(itemId).color(colorId).condition(conditionCode).quantity(quantity).build();
+        return WantedItem.builder()
+                         .id(itemId)
+                         .color(colorId)
+                         .condition(conditionCode)
+                         .quantity(quantity)
+                         .build();
     }
 
     public static class Builder {

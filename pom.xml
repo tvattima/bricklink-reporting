@@ -28,9 +28,57 @@
     </dependency>
 
     <dependency>
+      <groupId>net.sourceforge.htmlunit</groupId>
+      <artifactId>htmlunit</artifactId>
+      <version>2.46.0</version>
+    </dependency>
+
+    <dependency>
       <groupId>com.bricklink.api</groupId>
       <artifactId>bricklink-rest</artifactId>
-      <version>${bricklink-rest.version}</version>
+      <version>1.1.0-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.bricklink.api</groupId>
+      <artifactId>bricklink-ajax</artifactId>
+      <version>1.1.0-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.bricklink.data</groupId>
+      <artifactId>bricklink-data</artifactId>
+      <version>1.1.0-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.bricklink.api</groupId>
+      <artifactId>bricklink-html</artifactId>
+      <version>1.1.0-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.vattima.bricklink</groupId>
+      <artifactId>bricklink-reporting</artifactId>
+      <version>1.1.0-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.vattima.lego</groupId>
+      <artifactId>lego-inventory-sheet</artifactId>
+      <version>1.1.0-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-math3</artifactId>
+      <version>3.6.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.dataformat</groupId>
+      <artifactId>jackson-dataformat-xml</artifactId>
+      <version>2.13.5</version>
     </dependency>
 
     <dependency>

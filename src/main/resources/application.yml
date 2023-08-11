@@ -1,0 +1,61 @@
+spring:
+  jmx:
+    enabled: false
+  application:
+    name: Lego Bricklink Inventory
+  datasource:
+    client-config-dir: C:\Users\tvatt\.credentials\site5\database
+    client-config-file: site5-database-configuration.json
+    database-key-name: site5-lego-dev
+    hikari:
+      connection-timeout: 10000
+      idle-timeout: 30000
+      connection-test-query: SELECT 1
+      initialization-fail-timeout: 10000
+      auto-commit: false
+      login-timeout: 10000
+      minimum-idle: 5
+      maximum-pool-size: 5
+      validation-timeout: 10000
+      pool-name: site5-mysql-jdbc-pool
+  main:
+    web-application-type: none
+
+bricklink:
+  rest:
+    uri: https://api.bricklink.com/api/store/v1
+    client-config-dir: C:\Users\tvatt\.credentials\bricklink
+    client-config-file: bricklink-client-api-keys.json
+  web:
+    client-config-dir: C:\Users\tvatt\.credentials\bricklink
+    client-config-file: bricklink-web.json
+    pool:
+      default-max-per-route: 20
+      max-per-route: 20
+      max-total: 50
+
+logging:
+  level:
+    root: INFO
+    com.vattima.lego.data.ibatis.mapper: WARN
+    net.bricklink.data: WARN
+    org.springframework.jdbc: WARN
+    org.mybatis: WARN
+    com.gargoylesoftware: ERROR
+    com.gargoylesoftware.htmlunit.javascript.StrictErrorReporter: OFF
+    com.zaxxer: WARN
+    org.apache: ERROR
+    feign: WARN
+    sun: WARN
+    okhttp3: WARN
+
+lego:
+  sheet:
+    dataStoreDir: c:/users/tvatt/.credentials/sheets.googleapis.com-java-quickstart
+    clientSecretDir: /client_secret.json
+    id: 1KegFWxww3v6qWn6lfg8PWb-X8Ipc8Y3Asq7l6subgq4
+    workbook: By BOX
+    #workbook: By BOX, by NUMBER
+    range: A2:F
+
+debug: false
