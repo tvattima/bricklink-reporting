@@ -1,6 +1,7 @@
 package com.vattima.bricklink.reporting.app;
 
-import com.bricklink.api.ajax.BricklinkAjaxClient;
+import com.bricklink.api.ajax.PagingBricklinkAjaxClient;
+import com.bricklink.api.ajax.model.v1.ItemForSale;
 import com.bricklink.api.ajax.support.CatalogItemsForSaleResult;
 import com.bricklink.api.html.BricklinkHtmlClient;
 import com.bricklink.api.html.model.v2.CatalogItem;
@@ -9,7 +10,6 @@ import com.bricklink.web.support.BricklinkWebService;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.vattima.bricklink.reporting.model.Store;
 import com.vattima.bricklink.reporting.model.StoreAggregator;
-import com.vattima.bricklink.reporting.model.StoreLotsForSale;
 import com.vattima.bricklink.reporting.model.WantedItemForSaleAggregator;
 import com.vattima.bricklink.reporting.wantedlist.WantedListInventory;
 import com.vattima.bricklink.reporting.wantedlist.model.WantedItem;
@@ -45,11 +45,11 @@ public class WantedListOrderGenerator {
     public static class WantedListTest implements CommandLineRunner {
         private final BricklinkWebService bricklinkWebService;
         private final BricklinkHtmlClient bricklinkHtmlClient;
-        private final BricklinkAjaxClient bricklinkAjaxClient;
+        private final PagingBricklinkAjaxClient pagingBricklinkAjaxClient;
 
         @Override
         public void run(String... args) throws Exception {
-            byte[] bytes = bricklinkWebService.dowloadWantedList(5441708L, "MISSING_(11)_BTD_Union_Pacific_Heritage_Water_Tender");
+            byte[] bytes = bricklinkWebService.dowloadWantedList(643824L, "ring-box");
             XmlMapper xmlMapper = new XmlMapper();
             String xml = IOUtils.toString(bytes, CharEncoding.UTF_8);
             WantedListInventory inventory = xmlMapper.readValue(xml, WantedListInventory.class);
@@ -81,14 +81,14 @@ public class WantedListOrderGenerator {
                         .of("color", wi.getColorId())
                         .get();
 
-                CatalogItemsForSaleResult catalogNewItemsForSaleResult = bricklinkAjaxClient.catalogItemsForSale(params);
+                CatalogItemsForSaleResult catalogNewItemsForSaleResult = pagingBricklinkAjaxClient.catalogItemsForSale(params);
                 // log.info("\t {} total count {}, rpp {} -------------------------------------------------------------------------------", params, catalogNewItemsForSaleResult.getTotal_count(), catalogNewItemsForSaleResult.getRpp());
                 catalogNewItemsForSaleResult.getList().forEach(fsr -> {
                     // log.info("\t{}", fsr);
                     wantedItemForSaleAggregator.addItemForSale(wi, fsr);
                 });
-                Set<StoreLotsForSale> storeLotsForSale = wantedItemForSaleAggregator.getWantedStoreLotsForSale(wi, 30);
-                storeLotsForSale.forEach(slfs -> storeAggregator.addItemForSale(wi, slfs));
+//                Set<StoreLotsForSale> storeLotsForSale = wantedItemForSaleAggregator.getWantedStoreLotsForSale(wi, 100);
+//                storeLotsForSale.forEach(slfs -> storeAggregator.addItemForSale(wi, slfs));
 
 //                Store store = slfs.getStore();
 //                log.info(String.format("\t\t\t Store %1$30s, Price %2$7s, Min Buy %3$7s Total Price %4$7s Total Lots %5$d", store.getStoreName(), decimalFormat.format(slfs.getSalePrice()), decimalFormat.format(store.getMinBuy()), decimalFormat.format(slfs.getSalePrice() * wi.getQuantity()), storeAggregator.getStoreLotsForSale(store).size()));
@@ -98,10 +98,12 @@ public class WantedListOrderGenerator {
             wantedItemForSaleAggregator.filterStores();
             storeAggregator.filterStores();
             log.info("Stores Report ----------------------------------------------------------------------------------------------------");
-            storeAggregator.getStores().entrySet().stream().sorted(Comparator.comparingInt(e -> e.getValue().size())).forEach(e -> {
+            wantedItemForSaleAggregator.getStores().entrySet().stream().sorted(Comparator.comparingInt(e -> e.getValue().size())).forEach(e -> {
                 Store store = e.getKey();
-                Set<StoreLotsForSale> storeLotsForSale = e.getValue();
-                log.info("Store {} Lots {} Total Price {} Parts {}", store.getStoreName(), storeLotsForSale.size(), decimalFormat.format(storeLotsForSale.stream().mapToDouble(StoreLotsForSale::getSalePrice).sum()), storeLotsForSale.stream().map(ifs -> ifs.getWantedItem().getItemId()).collect(Collectors.joining(",")));
+//                Set<StoreLotsForSale> storeLotsForSale = e.getValue();
+                Set<ItemForSale> itemsForSale = e.getValue();
+//                log.info("Store {} Unique Lots {} Total Price {} Parts {}", store.getStoreName(), storeLotsForSale.stream().map(StoreLotsForSale::getWantedItem).distinct().count(), decimalFormat.format(store.getTotalOrderCost()), storeLotsForSale.stream().map(ifs -> ifs.getWantedItem().getItemId()).collect(Collectors.joining(",")));
+                log.info("Store {} Unique Lots {} Total Price {} Parts {}", store.getStoreName(), itemsForSale.stream().map(ItemForSale::get).distinct().count(), decimalFormat.format(store.getTotalOrderCost()), itemsForSale.stream().map(ItemForSale::getIdInv).collect(Collectors.toSet()));
             });
 //            log.info("Wanted Items {}", wantedItemForSaleAggregator.getWantedItemsForSale());
         }

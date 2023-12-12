@@ -43,22 +43,23 @@ public class StoreAggregator {
     public void filterStores() {
         Set<Store> storesNotMeetingMinimumBuy = new HashSet<>();
         stores.forEach((store, storeLotsForSale) -> {
+            final AtomicDouble storeTotalOrderCost = new AtomicDouble(0.0);
             storeLotsForSale.forEach(slfs -> {
                 WantedItem wantedItem = slfs.getWantedItem();
-                final AtomicDouble storeTotalCost = new AtomicDouble(0.0);
                 final AtomicInteger wantedQuantityRemaining = new AtomicInteger(wantedItem.getQuantity());
                 slfs.getItemsForSale().stream()
                     .sorted(Comparator.comparing(ItemForSale::getN4Qty))
                     .forEach(ifs -> {
                         int quantityUsedFromThisItemForSale = Math.min(wantedQuantityRemaining.get(), ifs.getN4Qty());
-                        storeTotalCost.addAndGet(ifs.getSalePrice() * quantityUsedFromThisItemForSale);
+                        storeTotalOrderCost.addAndGet(ifs.getSalePrice() * quantityUsedFromThisItemForSale);
                         wantedQuantityRemaining.addAndGet(-1 * quantityUsedFromThisItemForSale);
                     });
-                if (storeTotalCost.get() < store.getMinBuy()) {
-                    log.info("Store {} total purchase of {} does not meet minimum buy of {}", store.getStoreName(), storeTotalCost, store.getMinBuy());
-                    storesNotMeetingMinimumBuy.add(store);
-                }
             });
+            store.setTotalOrderCost(storeTotalOrderCost.get());
+            if (storeTotalOrderCost.get() < store.getMinBuy()) {
+                log.info("Store {} total purchase of {} does not meet minimum buy of {}", store.getStoreName(), storeTotalOrderCost, store.getMinBuy());
+                storesNotMeetingMinimumBuy.add(store);
+            }
         });
         storesNotMeetingMinimumBuy.forEach(stores::remove);
     }

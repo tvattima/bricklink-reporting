@@ -43,6 +43,7 @@ logging:
     org.mybatis: WARN
     com.gargoylesoftware: ERROR
     com.gargoylesoftware.htmlunit.javascript.StrictErrorReporter: OFF
+    com.gargoylesoftware.htmlunit.javascript.DefaultJavaScriptErrorListener: OFF
     com.zaxxer: WARN
     org.apache: ERROR
     feign: WARN

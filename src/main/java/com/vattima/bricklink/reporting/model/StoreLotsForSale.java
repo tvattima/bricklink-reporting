@@ -5,6 +5,7 @@ import com.bricklink.api.ajax.model.v1.ItemForSale;
 import com.google.common.util.concurrent.AtomicDouble;
 import com.vattima.bricklink.reporting.wantedlist.model.WantedItem;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Comparator;
@@ -15,8 +16,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Data
 @Slf4j
 public class StoreLotsForSale {
+
+    @EqualsAndHashCode.Include
     private final WantedItem wantedItem;
+
+    @EqualsAndHashCode.Include
     private final Store store;
+
     private double storeSalePrice = 0.0;
     private Set<ItemForSale> itemsForSale = new HashSet<>();
 
@@ -39,9 +45,7 @@ public class StoreLotsForSale {
     public boolean meetsMinimumQuantityWanted() {
         int totalQuantity = getTotalQuantity();
         boolean meetsMinimumQuantityWanted = wantedItem.getQuantity() <= totalQuantity;
-        if (!meetsMinimumQuantityWanted) {
-            log.info("Store {} total quantity {} {} wanted item minimum quantity {} for item {}", store.getStoreName(), totalQuantity, ((meetsMinimumQuantityWanted) ? "meets" : "doesn't meet"), wantedItem.getQuantity(), wantedItem.getItem());
-        }
+        log.info("Store {} total quantity {} {} wanted item minimum quantity {} for item {}", store.getStoreName(), totalQuantity, ((meetsMinimumQuantityWanted) ? "meets" : "doesn't meet"), wantedItem.getQuantity(), wantedItem.getItem());
         return meetsMinimumQuantityWanted;
     }
 

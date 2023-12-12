@@ -20,6 +20,7 @@ public class Store {
     private Integer sellerFeedbackScore;
     private String sellerCountryName;
     private String sellerCountryCode;
+    private double totalOrderCost;
 
     public static Store fromItemForSale(final ItemForSale itemForSale) {
         return storeFromItemForSale.apply(itemForSale);
