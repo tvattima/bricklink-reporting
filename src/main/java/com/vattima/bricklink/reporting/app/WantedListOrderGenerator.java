@@ -1,22 +1,17 @@
 package com.vattima.bricklink.reporting.app;
 
 import com.bricklink.api.ajax.PagingBricklinkAjaxClient;
-import com.bricklink.api.ajax.model.v1.ItemForSale;
 import com.bricklink.api.ajax.support.CatalogItemsForSaleResult;
 import com.bricklink.api.html.BricklinkHtmlClient;
 import com.bricklink.api.html.model.v2.CatalogItem;
+import com.bricklink.api.html.model.v2.WantedItem;
 import com.bricklink.api.rest.client.ParamsBuilder;
-import com.bricklink.web.support.BricklinkWebService;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.bricklink.web.api.BricklinkWebService;
 import com.vattima.bricklink.reporting.model.Store;
-import com.vattima.bricklink.reporting.model.StoreAggregator;
+import com.vattima.bricklink.reporting.model.StoreLotsForSale;
 import com.vattima.bricklink.reporting.model.WantedItemForSaleAggregator;
-import com.vattima.bricklink.reporting.wantedlist.WantedListInventory;
-import com.vattima.bricklink.reporting.wantedlist.model.WantedItem;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.CharEncoding;
-import org.apache.commons.io.IOUtils;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -24,16 +19,14 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Component;
 
 import java.text.DecimalFormat;
-import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @SpringBootApplication(scanBasePackages = {"com"})
 @EnableConfigurationProperties
 public class WantedListOrderGenerator {
 
-    private static final DecimalFormat decimalFormat = new DecimalFormat("#.00");
+    private static final DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
     public static void main(String[] args) {
         SpringApplication.run(WantedListOrderGenerator.class, args);
@@ -49,63 +42,64 @@ public class WantedListOrderGenerator {
 
         @Override
         public void run(String... args) throws Exception {
-            byte[] bytes = bricklinkWebService.dowloadWantedList(643824L, "ring-box");
-            XmlMapper xmlMapper = new XmlMapper();
-            String xml = IOUtils.toString(bytes, CharEncoding.UTF_8);
-            WantedListInventory inventory = xmlMapper.readValue(xml, WantedListInventory.class);
+            Set<WantedItem> wantedItems = bricklinkWebService.getWantedListItems(7152827L);
 
-            Set<WantedItem> wantedItems = inventory.getWantedListItems()
-                                                    .stream()
-                                                    .map(wli -> WantedItem.builder()
-                                                                          .id(wli.getItemId())
-                                                                          .color(wli.getColor())
-                                                                          .condition(wli.getCondition())
-                                                                          .quantity(wli.getMinQty())
-                                                                          .build())
-                                                    .collect(Collectors.toSet());
             log.info("------------------------------------------------------------------------------------------------");
-            StoreAggregator storeAggregator = new StoreAggregator();
             WantedItemForSaleAggregator wantedItemForSaleAggregator = new WantedItemForSaleAggregator();
             wantedItems.forEach(wi -> {
-                log.info("Part {} Color {} Condition {} Quantity {}", wi.getItem().getItemId(), wi.getColor().getColorId(), wi.getCondition().getConditionCode(), wi.getQuantity());
+                log.info("Part {} Color {} Condition {} Quantity {}", wi.getItemNo(), wi.getColorName(), wi.getWantedNew(), wi.getWantedQty());
 
-                CatalogItem catalogitem = bricklinkHtmlClient.getCatalogPartItemId(wi.getItemId());
+                CatalogItem catalogitem = bricklinkHtmlClient.getCatalogPartItemId(wi.getItemID());
 
                 Map<String, Object> params = new ParamsBuilder()
-                        .of("itemid",catalogitem.getItemId())
+                        .of("itemid", catalogitem.getItemId())
                         .of("rpp", 500)
                         .of("loc", "US")
                         .of("minqty", 1 /*wi.getQuantity()*/) // Use MinQty of 1 so that the Quantity of multiple lots from same seller can be combined to determine if MinQty wanted is met by the Seller
-                        .of("cond", wi.getCondition().getConditionCode().equals("N")?"N":"*")
+                        .of("cond", wi.getWantedNew().equals("N") ? "N" : "*")
                         .of("st", 1)
-                        .of("color", wi.getColorId())
+                        .of("color", wi.getColorID())
                         .get();
 
                 CatalogItemsForSaleResult catalogNewItemsForSaleResult = pagingBricklinkAjaxClient.catalogItemsForSale(params);
-                // log.info("\t {} total count {}, rpp {} -------------------------------------------------------------------------------", params, catalogNewItemsForSaleResult.getTotal_count(), catalogNewItemsForSaleResult.getRpp());
-                catalogNewItemsForSaleResult.getList().forEach(fsr -> {
-                    // log.info("\t{}", fsr);
-                    wantedItemForSaleAggregator.addItemForSale(wi, fsr);
-                });
-//                Set<StoreLotsForSale> storeLotsForSale = wantedItemForSaleAggregator.getWantedStoreLotsForSale(wi, 100);
-//                storeLotsForSale.forEach(slfs -> storeAggregator.addItemForSale(wi, slfs));
-
-//                Store store = slfs.getStore();
-//                log.info(String.format("\t\t\t Store %1$30s, Price %2$7s, Min Buy %3$7s Total Price %4$7s Total Lots %5$d", store.getStoreName(), decimalFormat.format(slfs.getSalePrice()), decimalFormat.format(store.getMinBuy()), decimalFormat.format(slfs.getSalePrice() * wi.getQuantity()), storeAggregator.getStoreLotsForSale(store).size()));
-//                log.info("\t-------------------------------------------------------------------------------");
-
+                catalogNewItemsForSaleResult.getList()
+                                            .forEach(fsr -> wantedItemForSaleAggregator.addItemForSale(wi, fsr));
             });
+
             wantedItemForSaleAggregator.filterStores();
-            storeAggregator.filterStores();
-            log.info("Stores Report ----------------------------------------------------------------------------------------------------");
-            wantedItemForSaleAggregator.getStores().entrySet().stream().sorted(Comparator.comparingInt(e -> e.getValue().size())).forEach(e -> {
-                Store store = e.getKey();
-//                Set<StoreLotsForSale> storeLotsForSale = e.getValue();
-                Set<ItemForSale> itemsForSale = e.getValue();
-//                log.info("Store {} Unique Lots {} Total Price {} Parts {}", store.getStoreName(), storeLotsForSale.stream().map(StoreLotsForSale::getWantedItem).distinct().count(), decimalFormat.format(store.getTotalOrderCost()), storeLotsForSale.stream().map(ifs -> ifs.getWantedItem().getItemId()).collect(Collectors.joining(",")));
-                log.info("Store {} Unique Lots {} Total Price {} Parts {}", store.getStoreName(), itemsForSale.stream().map(ItemForSale::get).distinct().count(), decimalFormat.format(store.getTotalOrderCost()), itemsForSale.stream().map(ItemForSale::getIdInv).collect(Collectors.toSet()));
-            });
-//            log.info("Wanted Items {}", wantedItemForSaleAggregator.getWantedItemsForSale());
+            wantedItemForSaleAggregator.analyze();
+
+            Map<Store, Set<StoreLotsForSale>> storeMap = wantedItemForSaleAggregator.getStores();
+            storeMap.entrySet()
+                    .stream()
+                    .filter(e -> wantedItemForSaleAggregator.meetsStoreMinimumBuy(e.getKey(), storeMap))
+                    //.sorted(e -> {})
+                    .forEach(e -> {
+                        log.info("Store : {} Min Buy {} - Fulfills {} out of {} Wanted Items -  Total Purchase Amount {}",
+                                e.getKey()
+                                 .getStoreName(),
+                                e.getKey()
+                                 .getMinBuy(),
+                                storeMap.get(e.getKey())
+                                        .size(),
+                                wantedItems.size(),
+                                format(wantedItemForSaleAggregator.storePurchaseAmount(e.getKey(), storeMap)));
+                        storeMap.get(e.getKey())
+                                .forEach(slfs -> {
+                                    log.info("\t Item {} Color {} Condition {} Quantity on Hand {} Wanted Quantity {} Cost {} Wanted Item Cost {}",
+                                            slfs.getWantedItem().getItemNo(),
+                                            slfs.getWantedItem().getColorName(),
+                                            slfs.getWantedItem().getWantedNew(),
+                                            slfs.getTotalQuantity(),
+                                            slfs.getWantedItem().getWantedQty(),
+                                            slfs.getSalePrice(),
+                                            slfs.getWantedItemCost());
+                                });
+                    });
         }
+    }
+
+    private static String format(final double value) {
+        return decimalFormat.format(value);
     }
 }
