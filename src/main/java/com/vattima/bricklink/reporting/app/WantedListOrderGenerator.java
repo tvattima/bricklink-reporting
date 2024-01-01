@@ -8,7 +8,8 @@ import com.bricklink.api.html.model.v2.WantedItem;
 import com.bricklink.api.rest.client.ParamsBuilder;
 import com.bricklink.web.api.BricklinkWebService;
 import com.vattima.bricklink.reporting.model.Store;
-import com.vattima.bricklink.reporting.model.StoreLotsForSale;
+import com.vattima.bricklink.reporting.model.StoreLotsForSaleComparator;
+import com.vattima.bricklink.reporting.model.StoreWantedItemLotsForSale;
 import com.vattima.bricklink.reporting.model.WantedItemForSaleAggregator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Component;
 
 import java.text.DecimalFormat;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 
@@ -41,22 +43,23 @@ public class WantedListOrderGenerator {
         private final PagingBricklinkAjaxClient pagingBricklinkAjaxClient;
 
         @Override
-        public void run(String... args) throws Exception {
-            Set<WantedItem> wantedItems = bricklinkWebService.getWantedListItems(7152827L);
+        public void run(String... args) {
+            Set<WantedItem> wantedItems = bricklinkWebService.getWantedListItems(0L);
 
             log.info("------------------------------------------------------------------------------------------------");
             WantedItemForSaleAggregator wantedItemForSaleAggregator = new WantedItemForSaleAggregator();
             wantedItems.forEach(wi -> {
-                log.info("Part {} Color {} Condition {} Quantity {}", wi.getItemNo(), wi.getColorName(), wi.getWantedNew(), wi.getWantedQty());
+                log.info("Part [{}]::[{}] Color {} Condition {} Quantity {}", wi.getItemName(), wi.getItemNo(), wi.getColorName(), wi.getWantedNew(), wi.getWantedQty());
 
-                CatalogItem catalogitem = bricklinkHtmlClient.getCatalogPartItemId(wi.getItemID());
+                CatalogItem catalogitem = bricklinkHtmlClient.getCatalogPartItemId(wi.getItemNo());
 
                 Map<String, Object> params = new ParamsBuilder()
                         .of("itemid", catalogitem.getItemId())
                         .of("rpp", 500)
                         .of("loc", "US")
                         .of("minqty", 1 /*wi.getQuantity()*/) // Use MinQty of 1 so that the Quantity of multiple lots from same seller can be combined to determine if MinQty wanted is met by the Seller
-                        .of("cond", wi.getWantedNew().equals("N") ? "N" : "*")
+                        .of("cond", wi.getWantedNew()
+                                      .equals("N") ? "N" : "*")
                         .of("st", 1)
                         .of("color", wi.getColorID())
                         .get();
@@ -69,29 +72,37 @@ public class WantedListOrderGenerator {
             wantedItemForSaleAggregator.filterStores();
             wantedItemForSaleAggregator.analyze();
 
-            Map<Store, Set<StoreLotsForSale>> storeMap = wantedItemForSaleAggregator.getStores();
+            Map<Store, Set<StoreWantedItemLotsForSale>> storeMap = wantedItemForSaleAggregator.getStores();
+            Comparator<Map.Entry<Store, Set<StoreWantedItemLotsForSale>>> storeLotsForSaleComparator = new StoreLotsForSaleComparator();
+            //.sorted(e -> {})
             storeMap.entrySet()
                     .stream()
-                    .filter(e -> wantedItemForSaleAggregator.meetsStoreMinimumBuy(e.getKey(), storeMap))
-                    //.sorted(e -> {})
+                    .sorted(storeLotsForSaleComparator.reversed())
                     .forEach(e -> {
-                        log.info("Store : {} Min Buy {} - Fulfills {} out of {} Wanted Items -  Total Purchase Amount {}",
+                        log.info("Store : {} [{}] Min Buy {} - Fulfills {} out of {} Wanted Items -  Total Purchase Amount {}",
                                 e.getKey()
                                  .getStoreName(),
+                                e.getKey()
+                                 .getSellerUsername(),
                                 e.getKey()
                                  .getMinBuy(),
                                 storeMap.get(e.getKey())
                                         .size(),
                                 wantedItems.size(),
-                                format(wantedItemForSaleAggregator.storePurchaseAmount(e.getKey(), storeMap)));
+                                format(e.getKey()
+                                        .getTotalOrderCost()));
                         storeMap.get(e.getKey())
                                 .forEach(slfs -> {
-                                    log.info("\t Item {} Color {} Condition {} Quantity on Hand {} Wanted Quantity {} Cost {} Wanted Item Cost {}",
-                                            slfs.getWantedItem().getItemNo(),
-                                            slfs.getWantedItem().getColorName(),
-                                            slfs.getWantedItem().getWantedNew(),
+                                    log.debug("\t Item {} Color {} Condition {} Quantity on Hand {} Wanted Quantity {} Cost {} Wanted Item Cost {}",
+                                            slfs.getWantedItem()
+                                                .getItemNo(),
+                                            slfs.getWantedItem()
+                                                .getColorName(),
+                                            slfs.getWantedItem()
+                                                .getWantedNew(),
                                             slfs.getTotalQuantity(),
-                                            slfs.getWantedItem().getWantedQty(),
+                                            slfs.getWantedItem()
+                                                .getWantedQty(),
                                             slfs.getSalePrice(),
                                             slfs.getWantedItemCost());
                                 });

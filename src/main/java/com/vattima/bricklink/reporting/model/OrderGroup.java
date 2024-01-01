@@ -6,11 +6,11 @@ import java.util.Map;
 import java.util.Set;
 
 public class OrderGroup {
-    Map<Store, Set<StoreLotsForSale>> orders = new HashMap();
+    Map<Store, Set<StoreWantedItemLotsForSale>> orders = new HashMap();
 
-    public void addStoreForSaleItem(final Store store, final StoreLotsForSale storeLotsForSale) {
-        Set<StoreLotsForSale> itemsForSaleHolders = orders.computeIfAbsent(store, (s) -> new HashSet<>());
-        itemsForSaleHolders.add(storeLotsForSale);
+    public void addStoreForSaleItem(final Store store, final StoreWantedItemLotsForSale storeWantedItemLotsForSale) {
+        Set<StoreWantedItemLotsForSale> itemsForSaleHolders = orders.computeIfAbsent(store, (s) -> new HashSet<>());
+        itemsForSaleHolders.add(storeWantedItemLotsForSale);
         orders.put(store, itemsForSaleHolders);
     }
 

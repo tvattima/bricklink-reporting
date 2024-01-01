@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Data
 @Slf4j
-public class StoreLotsForSale {
+public class StoreWantedItemLotsForSale {
 
     @EqualsAndHashCode.Include
     private final WantedItem wantedItem;
@@ -30,13 +30,13 @@ public class StoreLotsForSale {
         itemsForSale.add(itemForSale);
     }
 
-    public boolean meetsMinimumQuantityWanted() {
+    public boolean meetsQuantityWanted() {
         int totalQuantity = getTotalQuantity();
-        boolean meetsMinimumQuantityWanted = wantedItem.getWantedQty() <= totalQuantity;
-        if (!meetsMinimumQuantityWanted) {
-            log.debug("Store {} total quantity {} {} wanted item minimum quantity {} for item {}", store.getStoreName(), totalQuantity, ((meetsMinimumQuantityWanted) ? "meets" : "doesn't meet"), wantedItem.getWantedQty(), wantedItem.getItemNo());
+        boolean meetsQuantityWanted = wantedItem.getWantedQty() <= totalQuantity;
+        if (!meetsQuantityWanted) {
+            log.debug("Store {} total quantity {} {} wanted item minimum quantity {} for item {}", store.getStoreName(), totalQuantity, ((meetsQuantityWanted) ? "meets" : "doesn't meet"), wantedItem.getWantedQty(), wantedItem.getItemNo());
         }
-        return meetsMinimumQuantityWanted;
+        return meetsQuantityWanted;
     }
 
     public double getWantedItemCost() {

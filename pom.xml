@@ -5,18 +5,22 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.7.12</version>
+    <version>3.2.1</version>
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
   <groupId>com.vattima.bricklink</groupId>
   <artifactId>bricklink-reporting</artifactId>
-  <version>1.1.0-SNAPSHOT</version>
+  <version>1.2.0-SNAPSHOT</version>
   <name>Bricklink :: Reporting</name>
   <description>Bricklink Reporting</description>
 
   <properties>
     <java.version>17</java.version>
-    <bricklink-rest.version>1.1.0-SNAPSHOT</bricklink-rest.version>
+    <bricklink-rest.version>1.2.0-SNAPSHOT</bricklink-rest.version>
+    <bricklink-ajax.version>1.2.0-SNAPSHOT</bricklink-ajax.version>
+    <bricklink-data.version>1.2.0-SNAPSHOT</bricklink-data.version>
+    <bricklink-html.version>1.2.0-SNAPSHOT</bricklink-html.version>
+    <lego-inventory-sheet.version>1.2.0-SNAPSHOT</lego-inventory-sheet.version>
   </properties>
 
   <dependencies>
@@ -36,31 +40,31 @@
     <dependency>
       <groupId>com.bricklink.api</groupId>
       <artifactId>bricklink-rest</artifactId>
-      <version>1.1.0-SNAPSHOT</version>
+      <version>${bricklink-rest.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.bricklink.api</groupId>
       <artifactId>bricklink-ajax</artifactId>
-      <version>1.1.0-SNAPSHOT</version>
+      <version>${bricklink-ajax.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.bricklink.data</groupId>
       <artifactId>bricklink-data</artifactId>
-      <version>1.1.0-SNAPSHOT</version>
+      <version>${bricklink-data.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.bricklink.api</groupId>
       <artifactId>bricklink-html</artifactId>
-      <version>1.1.0-SNAPSHOT</version>
+      <version>${bricklink-html.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.vattima.lego</groupId>
       <artifactId>lego-inventory-sheet</artifactId>
-      <version>1.1.0-SNAPSHOT</version>
+      <version>${lego-inventory-sheet.version}</version>
     </dependency>
 
     <dependency>
@@ -72,13 +76,11 @@
     <dependency>
       <groupId>com.fasterxml.jackson.dataformat</groupId>
       <artifactId>jackson-dataformat-xml</artifactId>
-      <version>2.13.5</version>
     </dependency>
 
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>1.18.28</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -121,19 +123,19 @@
       <plugin>
         <groupId>org.openrewrite.maven</groupId>
         <artifactId>rewrite-maven-plugin</artifactId>
-        <version>4.46.0</version>
+        <version>5.17.1</version>
         <configuration>
           <activeRecipes>
-            <recipe>org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_7</recipe>
-            <recipe>org.openrewrite.java.migrate.UpgradeToJava17</recipe>
-            <recipe>org.openrewrite.java.spring.boot2.SpringBoot2JUnit4to5Migration</recipe>
+            <recipe>org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_0</recipe>
+            <recipe>org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_1</recipe>
+            <recipe>org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_2</recipe>
           </activeRecipes>
         </configuration>
         <dependencies>
           <dependency>
             <groupId>org.openrewrite.recipe</groupId>
             <artifactId>rewrite-spring</artifactId>
-            <version>4.36.0</version>
+            <version>5.1.7</version>
           </dependency>
         </dependencies>
       </plugin>
