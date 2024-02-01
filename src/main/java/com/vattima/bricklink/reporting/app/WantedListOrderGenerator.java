@@ -44,29 +44,33 @@ public class WantedListOrderGenerator {
 
         @Override
         public void run(String... args) {
-            Set<WantedItem> wantedItems = bricklinkWebService.getWantedListItems(0L);
+            Set<WantedItem> wantedItems = bricklinkWebService.getWantedListItems(10855501L);
 
             log.info("------------------------------------------------------------------------------------------------");
             WantedItemForSaleAggregator wantedItemForSaleAggregator = new WantedItemForSaleAggregator();
             wantedItems.forEach(wi -> {
-                log.info("Part [{}]::[{}] Color {} Condition {} Quantity {}", wi.getItemName(), wi.getItemNo(), wi.getColorName(), wi.getWantedNew(), wi.getWantedQty());
+                log.info("Part [{}]::[{}] Color {} Condition {} Quantity {} Have [{}]", wi.getItemName(), wi.getItemNo(), wi.getColorName(), wi.getWantedNew(), wi.getWantedQty(), wi.getWantedQtyFilled());
 
-                CatalogItem catalogitem = bricklinkHtmlClient.getCatalogPartItemId(wi.getItemNo());
+                if (wi.getWantedQty() > wi.getWantedQtyFilled()) {
+                    CatalogItem catalogitem = bricklinkHtmlClient.getCatalogPartItemId(wi.getItemNo());
 
-                Map<String, Object> params = new ParamsBuilder()
-                        .of("itemid", catalogitem.getItemId())
-                        .of("rpp", 500)
-                        .of("loc", "US")
-                        .of("minqty", 1 /*wi.getQuantity()*/) // Use MinQty of 1 so that the Quantity of multiple lots from same seller can be combined to determine if MinQty wanted is met by the Seller
-                        .of("cond", wi.getWantedNew()
-                                      .equals("N") ? "N" : "*")
-                        .of("st", 1)
-                        .of("color", wi.getColorID())
-                        .get();
+                    Map<String, Object> params = new ParamsBuilder()
+                            .of("itemid", catalogitem.getItemId())
+                            .of("rpp", 500)
+                            .of("loc", "US")
+                            .of("minqty", 1 /*wi.getQuantity()*/) // Use MinQty of 1 so that the Quantity of multiple lots from same seller can be combined to determine if MinQty wanted is met by the Seller
+                            .of("cond", wi.getWantedNew()
+                                          .equals("N") ? "N" : "*")
+                            .of("st", 1)
+                            .of("color", wi.getColorID())
+                            .get();
 
-                CatalogItemsForSaleResult catalogNewItemsForSaleResult = pagingBricklinkAjaxClient.catalogItemsForSale(params);
-                catalogNewItemsForSaleResult.getList()
-                                            .forEach(fsr -> wantedItemForSaleAggregator.addItemForSale(wi, fsr));
+                    CatalogItemsForSaleResult catalogNewItemsForSaleResult = pagingBricklinkAjaxClient.catalogItemsForSale(params);
+                    catalogNewItemsForSaleResult.getList()
+                                                .forEach(fsr -> wantedItemForSaleAggregator.addItemForSale(wi, fsr));
+                } else {
+                    log.info("Part [{}]::[{}] Color {} Condition {} Quantity {} has [{}] already on hand. Removing from search", wi.getItemName(), wi.getItemNo(), wi.getColorName(), wi.getWantedNew(), wi.getWantedQty(), wi.getWantedQtyFilled());
+                }
             });
 
             wantedItemForSaleAggregator.filterStores();

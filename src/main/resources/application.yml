@@ -6,7 +6,7 @@ spring:
   datasource:
     client-config-dir: C:\Users\tvatt\.credentials\site5\database
     client-config-file: site5-database-configuration.json
-    database-key-name: site5-lego-dev
+    database-key-name: site5-dev-lego
     hikari:
       connection-timeout: 10000
       idle-timeout: 30000
