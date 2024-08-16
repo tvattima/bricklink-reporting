@@ -6,10 +6,11 @@ import com.bricklink.api.ajax.support.CatalogItemsForSaleResult;
 import com.bricklink.api.html.BricklinkHtmlClient;
 import com.bricklink.api.html.model.v2.CatalogItem;
 import com.bricklink.api.rest.client.ParamsBuilder;
-import com.bricklink.web.support.BricklinkWebService;
+import com.bricklink.web.api.BricklinkWebService;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.vattima.bricklink.reporting.model.Store;
 import com.vattima.bricklink.reporting.model.StoreAggregator;
+import com.vattima.bricklink.reporting.model.StoreLotsForSale;
 import com.vattima.bricklink.reporting.model.WantedItemForSaleAggregator;
 import com.vattima.bricklink.reporting.wantedlist.WantedListInventory;
 import com.vattima.bricklink.reporting.wantedlist.model.WantedItem;
@@ -49,7 +50,7 @@ public class WantedListOrderGenerator {
 
         @Override
         public void run(String... args) throws Exception {
-            byte[] bytes = bricklinkWebService.dowloadWantedList(643824L, "ring-box");
+            byte[] bytes = bricklinkWebService.downloadWantedList(643824L, "ring-box");
             XmlMapper xmlMapper = new XmlMapper();
             String xml = IOUtils.toString(bytes, CharEncoding.UTF_8);
             WantedListInventory inventory = xmlMapper.readValue(xml, WantedListInventory.class);
@@ -101,9 +102,9 @@ public class WantedListOrderGenerator {
             wantedItemForSaleAggregator.getStores().entrySet().stream().sorted(Comparator.comparingInt(e -> e.getValue().size())).forEach(e -> {
                 Store store = e.getKey();
 //                Set<StoreLotsForSale> storeLotsForSale = e.getValue();
-                Set<ItemForSale> itemsForSale = e.getValue();
+                Set<StoreLotsForSale> itemsForSale = e.getValue();
 //                log.info("Store {} Unique Lots {} Total Price {} Parts {}", store.getStoreName(), storeLotsForSale.stream().map(StoreLotsForSale::getWantedItem).distinct().count(), decimalFormat.format(store.getTotalOrderCost()), storeLotsForSale.stream().map(ifs -> ifs.getWantedItem().getItemId()).collect(Collectors.joining(",")));
-                log.info("Store {} Unique Lots {} Total Price {} Parts {}", store.getStoreName(), itemsForSale.stream().map(ItemForSale::get).distinct().count(), decimalFormat.format(store.getTotalOrderCost()), itemsForSale.stream().map(ItemForSale::getIdInv).collect(Collectors.toSet()));
+                log.info("Store {} Unique Lots {} Total Price {} Parts {}", store.getStoreName(), itemsForSale.stream().map(StoreLotsForSale::getItemsForSale).distinct().count(), decimalFormat.format(store.getTotalOrderCost()), itemsForSale.stream().map(StoreLotsForSale::getItemsForSale).collect(Collectors.toSet()));
             });
 //            log.info("Wanted Items {}", wantedItemForSaleAggregator.getWantedItemsForSale());
         }

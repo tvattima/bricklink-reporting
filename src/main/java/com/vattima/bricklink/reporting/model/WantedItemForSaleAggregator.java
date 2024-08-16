@@ -67,16 +67,18 @@ public class WantedItemForSaleAggregator {
 //    }
 //
     public Map<Store, Set<StoreLotsForSale>> getStores() {
-        storeLotsForSaleSet.stream()
-                           .collect(Collectors.toMap(StoreLotsForSale::getStore,
-                                   StoreLotsForSale::getItemsForSale,
-                                   (oldItemsForSale, newItemsForSale) -> {
-                                       newItemsForSale.addAll(oldItemsForSale);
-                                       return newItemsForSale;
-                                   }))
-                .entrySet()
-                .stream()
-                .;
+        log.info("getStores not yet implemeted");
+//        storeLotsForSaleSet.stream()
+//                           .collect(Collectors.toMap(StoreLotsForSale::getStore,
+//                                   StoreLotsForSale::getItemsForSale,
+//                                   (oldItemsForSale, newItemsForSale) -> {
+//                                       newItemsForSale.addAll(oldItemsForSale);
+//                                       return newItemsForSale;
+//                                   }))
+//                .entrySet()
+//                .stream()
+//                .;
+        return Map.of();
     }
 
 //    public Map<WantedItem, Set<StoreLotsForSale>> getWantedItemsForSale() {
