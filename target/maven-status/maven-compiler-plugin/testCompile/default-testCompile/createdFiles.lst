@@ -1,1 +1,4 @@
+com\vattima\bricklink\reporting\wantedlist\model\WantedItemsTrackingServiceTest.class
+com\vattima\bricklink\reporting\wantedlist\model\WantedItemListAggregatorTest.class
+com\vattima\bricklink\reporting\wantedlist\model\PartOrderItemTest.class
 com\vattima\bricklink\reporting\wantedlist\model\WantedItemTest.class
