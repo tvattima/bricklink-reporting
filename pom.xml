@@ -47,8 +47,8 @@
 
     <dependency>
       <groupId>com.bricklink.data</groupId>
-      <artifactId>bricklink-data</artifactId>
-      <version>1.2.1-SNAPSHOT</version>
+      <artifactId>lego-data</artifactId>
+      <version>1.3.0-SNAPSHOT</version>
     </dependency>
 
     <dependency>
