@@ -1,7 +1,6 @@
 package com.vattima.bricklink.reporting.app;
 
 import com.bricklink.api.ajax.PagingBricklinkAjaxClient;
-import com.bricklink.api.ajax.model.v1.ItemForSale;
 import com.bricklink.api.ajax.support.CatalogItemsForSaleResult;
 import com.bricklink.api.html.BricklinkHtmlClient;
 import com.bricklink.api.html.model.v2.CatalogItem;
@@ -40,7 +39,7 @@ public class WantedListOrderGenerator {
         SpringApplication.run(WantedListOrderGenerator.class, args);
     }
 
-    @Component
+    //@Component
     @RequiredArgsConstructor
     @Slf4j
     public static class WantedListTest implements CommandLineRunner {
